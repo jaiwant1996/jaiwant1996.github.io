@@ -17,7 +17,7 @@ $(document).ready(function () {
   var barPadding = '1';
 
   function createSvg(parent, height, width) {
-    return d3.select(parent).append('svg').attr('height', height).attr('width', width);
+    return d3.select(parent).append('svg').attr('height', height/10).attr('width', width/10);
   }
 
   var svg = createSvg('body', svgHeight, svgWidth);

@@ -1,5 +1,8 @@
 $(document).ready(function () {
 
+
+	var currentdate = new Date(); 
+	
   var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   var audioElement = document.getElementById('audioElement');
   var audioSrc = audioCtx.createMediaElementSource(audioElement);
@@ -49,7 +52,7 @@ $(document).ready(function () {
            return d;
         })
         .attr('fill', function(d) {
-           return 'rgb(0, 0, ' + d/10 + ')';
+           return 'rgb(0, 0, ' + d + currentdate.getSeconds() + ')';
         });
   }
 

@@ -52,7 +52,7 @@ $(document).ready(function () {
            return d;
         })
         .attr('fill', function(d) {
-           return 'rgb(0, 110, ' + d + ')';
+           return 'rgb(0,' + d+123 + ',' + d + ')';
         });
   }
 

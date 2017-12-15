@@ -6,6 +6,7 @@
 body {
   font-family: 'Open Sans', serif;
   padding-top: 54px;
+  background: url("../images/bg.png");
   color: #868e96; }
 
 @media (min-width: 992px) {

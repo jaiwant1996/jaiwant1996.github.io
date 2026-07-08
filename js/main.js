@@ -38,8 +38,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const phrases = [
     'turn banking chaos into KPIs.',
     'automate my way out of busywork.',
-    'ship code while you\'re still in standup.',
-    'occasionally consult the stars.'
+    'ship ideas.',
+    'occasionally consult the stars.',
+    'design better systems',
+    'solve messy problems',
+    'drink too much coffee'
   ];
   const rotatorEl = document.getElementById('rotatorText');
   let pIndex = 0, cIndex = 0, deleting = false;

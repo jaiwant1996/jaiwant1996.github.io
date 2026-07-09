@@ -418,6 +418,158 @@ body.no-fine-pointer .tilt:hover {
 }
 .tag-cloud span:hover { transform: translateY(-2px) scale(1.05); background: rgba(255,255,255,0.09); }
 
+/* Adding chat-gpt CSS for the form */
+
+.contact-form{
+    width:100%;
+    max-width:650px;
+    margin:auto;
+    padding:40px;
+    border-radius:24px;
+    background:rgba(255,255,255,0.05);
+    backdrop-filter:blur(20px);
+    border:1px solid rgba(255,255,255,.08);
+}
+
+.input-group{
+    position:relative;
+    margin-bottom:30px;
+    padding-top:12px;      /* Space for floating label */
+}
+
+.input-group input,
+.input-group textarea{
+
+    width:100%;
+
+    padding:16px 18px;
+
+    border-radius:14px;
+
+    background:rgba(255,255,255,.04);
+
+    border:1px solid rgba(255,255,255,.12);
+
+    color:#fff;
+
+    font-size:16px;
+
+    outline:none;
+
+    transition:.35s ease;
+
+    font-family:inherit;
+
+    resize:none;
+
+    box-sizing:border-box;
+}
+
+.input-group label{
+
+    position:absolute;
+
+    left:16px;
+
+    top:28px;
+
+    color:#999;
+
+    pointer-events:none;
+
+    transition:all .25s ease;
+
+    font-size:16px;
+
+    line-height:1;
+
+}
+
+.input-group input:focus,
+.input-group textarea:focus{
+
+    border-color:#4f8cff;
+
+    box-shadow:0 0 25px rgba(79,140,255,.25);
+
+    transform:translateY(6px);
+
+}
+
+.input-group input:focus + label,
+.input-group textarea:focus + label,
+.input-group input:not(:placeholder-shown) + label,
+.input-group textarea:not(:placeholder-shown) + label{
+
+    top:-10px;
+
+    left:8px;
+
+    font-size:13px;
+
+    color:#4f8cff;
+
+    font-weight:500;
+
+}
+
+.submit-btn{
+
+    width:100%;
+
+    padding:16px;
+
+    border:none;
+
+    border-radius:14px;
+
+    font-size:16px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    color:white;
+
+    background:linear-gradient(
+        135deg,
+        #4f8cff,
+        #7b5cff
+    );
+
+    transition:.35s;
+
+}
+
+.submit-btn:hover{
+
+    transform:translateY(-3px);
+
+    box-shadow:0 12px 30px rgba(79,140,255,.35);
+
+}
+
+.submit-btn:active{
+
+    transform:scale(.98);
+
+}
+
+/* End of chat-gpt CSS */
+
+.parent-center{
+    display:flex;
+    justify-content:center;   /* Horizontal */
+    align-items:center;       /* Vertical */
+    min-height:100vh;
+}
+
+.child{
+    width:100%;
+    max-width:650px;
+    padding:40px;
+}
+
 /* Button ripple */
 .btn { position: relative; overflow: hidden; }
 .btn-ripple {

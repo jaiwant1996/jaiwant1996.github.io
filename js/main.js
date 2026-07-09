@@ -40,9 +40,9 @@ document.addEventListener('DOMContentLoaded', () => {
     'automate my way out of busywork.',
     'ship ideas.',
     'occasionally consult the stars.',
-    'design better systems',
-    'solve messy problems',
-    'drink too much coffee'
+    'design better systems.',
+    'solve messy problems.',
+    'drink too much coffee.'
   ];
   const rotatorEl = document.getElementById('rotatorText');
   let pIndex = 0, cIndex = 0, deleting = false;

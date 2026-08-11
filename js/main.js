@@ -21,7 +21,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ---------- Nav scrollspy (active section indicator) ---------- */
   const navAnchors = document.querySelectorAll('.nav-links a[href^="#"]');
-  const spySections = document.querySelectorAll('section[id]');
+  // Track whatever the nav actually links to (sections + the #sendMessage div), not just <section> tags
+  const spySections = Array.from(navAnchors)
+    .map((a) => document.getElementById(a.getAttribute('href').slice(1)))
+    .filter(Boolean);
   if (navAnchors.length && spySections.length && 'IntersectionObserver' in window) {
     const spy = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -38,11 +41,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const phrases = [
     'turn banking chaos into KPIs.',
     'automate my way out of busywork.',
-    'ship ideas.',
-    'occasionally consult the stars.',
-    'design better systems.',
-    'solve messy problems.',
-    'drink too much coffee.'
+    'ship code while you\'re still in standup.',
+    'solve problems nobody assigned me.'
   ];
   const rotatorEl = document.getElementById('rotatorText');
   let pIndex = 0, cIndex = 0, deleting = false;
@@ -133,9 +133,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.stat-num[data-count]').forEach(animateCounter);
   }
 
-  /* ---------- Starfield canvases ---------- */
+  /* ---------- Starfield canvas ---------- */
   initStarfield('starfield', { density: 0.00018, color: '255,255,255' });
-  initStarfield('astroCanvas', { density: 0.00028, color: '251,191,36', twinkle: true });
 
   function initStarfield(canvasId, opts) {
     const canvas = document.getElementById(canvasId);
@@ -305,43 +304,366 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  /* ---------- Sparkle burst on astro WhatsApp click ---------- */
-  const astroBtn = document.getElementById('astroBtn');
-  if (astroBtn) {
-    astroBtn.addEventListener('click', (e) => {
-      const originX = e.clientX, originY = e.clientY;
-      const colors = ['#fbbf24', '#f97316', '#fde68a'];
-      for (let i = 0; i < 18; i++) {
-        const p = document.createElement('span');
-        p.className = 'sparkle-particle';
-        const size = Math.random() * 6 + 3;
-        p.style.width = size + 'px';
-        p.style.height = size + 'px';
-        p.style.left = originX + 'px';
-        p.style.top = originY + 'px';
-        p.style.background = `radial-gradient(circle, ${colors[i % colors.length]}, transparent 70%)`;
-        document.body.appendChild(p);
+  /* ---------- Sparkle burst helper (reused by the Konami easter egg) ---------- */
+  function sparkleBurst(originX, originY, colors) {
+    colors = colors || ['#8b5cf6', '#ec4899', '#22d3ee'];
+    for (let i = 0; i < 24; i++) {
+      const p = document.createElement('span');
+      p.className = 'sparkle-particle';
+      const size = Math.random() * 6 + 3;
+      p.style.width = size + 'px';
+      p.style.height = size + 'px';
+      p.style.left = originX + 'px';
+      p.style.top = originY + 'px';
+      p.style.background = `radial-gradient(circle, ${colors[i % colors.length]}, transparent 70%)`;
+      document.body.appendChild(p);
 
-        const angle = Math.random() * Math.PI * 2;
-        const distance = Math.random() * 90 + 40;
-        const dx = Math.cos(angle) * distance;
-        const dy = Math.sin(angle) * distance;
+      const angle = Math.random() * Math.PI * 2;
+      const distance = Math.random() * 130 + 50;
+      const dx = Math.cos(angle) * distance;
+      const dy = Math.sin(angle) * distance;
 
-        if (window.gsap) {
-          gsap.to(p, {
-            x: dx, y: dy, opacity: 0, scale: 0.2, duration: 0.7 + Math.random() * 0.4,
-            ease: 'power2.out', onComplete: () => p.remove()
-          });
-        } else {
-          p.style.transition = 'transform 0.8s ease-out, opacity 0.8s ease-out';
-          requestAnimationFrame(() => {
-            p.style.transform = `translate(${dx}px, ${dy}px)`;
-            p.style.opacity = '0';
-          });
-          setTimeout(() => p.remove(), 850);
+      if (window.gsap) {
+        gsap.to(p, {
+          x: dx, y: dy, opacity: 0, scale: 0.2, duration: 0.7 + Math.random() * 0.5,
+          ease: 'power2.out', onComplete: () => p.remove()
+        });
+      } else {
+        p.style.transition = 'transform 0.8s ease-out, opacity 0.8s ease-out';
+        requestAnimationFrame(() => {
+          p.style.transform = `translate(${dx}px, ${dy}px)`;
+          p.style.opacity = '0';
+        });
+        setTimeout(() => p.remove(), 850);
+      }
+    }
+  }
+
+  /* ---------- Toast helper ---------- */
+  const toastEl = document.getElementById('toast');
+  let toastTimer;
+  function showToast(msg, duration) {
+    if (!toastEl) return;
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove('show'), duration || 2600);
+  }
+
+  /* ---------- Scroll progress bar ---------- */
+  const scrollProgressEl = document.getElementById('scrollProgress');
+  function updateScrollProgress() {
+    if (!scrollProgressEl) return;
+    const h = document.documentElement;
+    const scrolled = h.scrollTop;
+    const max = h.scrollHeight - h.clientHeight;
+    scrollProgressEl.style.width = (max > 0 ? (scrolled / max) * 100 : 0) + '%';
+  }
+  updateScrollProgress();
+  window.addEventListener('scroll', updateScrollProgress, { passive: true });
+
+  /* ---------- Time-based dynamic greeting ---------- */
+  const greetingEl = document.getElementById('liveGreeting');
+  if (greetingEl) {
+    const hour = new Date().getHours();
+    let msg;
+    if (hour < 5) msg = "Up late? Same. Automating something, probably.";
+    else if (hour < 12) msg = 'Good morning — hope your KPIs are behaving.';
+    else if (hour < 17) msg = 'Good afternoon. Somewhere, a spreadsheet needs saving.';
+    else if (hour < 21) msg = 'Good evening — perfect time to hire a consultant.';
+    else msg = "Still awake? I automate at this hour too.";
+    greetingEl.innerHTML = `<span class="dot"></span>${msg}`;
+  }
+
+  /* ---------- Copy email button ---------- */
+  const copyBtn = document.getElementById('copyEmailBtn');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', async () => {
+      const value = copyBtn.getAttribute('data-copy') || '';
+      try {
+        await navigator.clipboard.writeText(value);
+      } catch (err) {
+        const ta = document.createElement('textarea');
+        ta.value = value; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); } catch (e) {}
+        ta.remove();
+      }
+      const original = copyBtn.textContent;
+      copyBtn.textContent = '✅ Copied';
+      copyBtn.classList.add('copied');
+      showToast('Email copied to clipboard.');
+      setTimeout(() => { copyBtn.textContent = original; copyBtn.classList.remove('copied'); }, 1800);
+    });
+  }
+
+  /* ---------- Live GitHub stats ---------- */
+  const githubStatsEl = document.getElementById('githubStats');
+  if (githubStatsEl) {
+    fetch('https://api.github.com/users/jaiwant1996')
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then((data) => {
+        const repos = data.public_repos ?? '—';
+        githubStatsEl.textContent = `${repos} public repos and counting. Probably automating one right now.`;
+      })
+      .catch(() => {
+        githubStatsEl.textContent = 'Live stats took a coffee break — check the profile directly.';
+      });
+  }
+
+  /* ================================================================
+     Command palette (⌘K / Ctrl+K) — jump around the site or trigger
+     a few quick actions. Pure vanilla JS, no dependencies.
+     ================================================================ */
+  (function initCommandPalette() {
+    const overlay = document.getElementById('cmdkOverlay');
+    const input = document.getElementById('cmdkInput');
+    const list = document.getElementById('cmdkList');
+    const trigger = document.getElementById('cmdkTrigger');
+    if (!overlay || !input || !list) return;
+
+    const commands = [
+      { icon: '👋', label: 'Go to About', hint: 'section', action: () => scrollToId('about') },
+      { icon: '⚙️', label: 'Go to Skills', hint: 'section', action: () => scrollToId('skills') },
+      { icon: '💼', label: 'Go to Experience', hint: 'section', action: () => scrollToId('work') },
+      { icon: '🎸', label: 'Go to Beyond the Spreadsheets', hint: 'section', action: () => scrollToId('Beyond') },
+      { icon: '✉️', label: 'Go to Contact', hint: 'section', action: () => scrollToId('contact') },
+      { icon: '📝', label: 'Send a Message', hint: 'section', action: () => scrollToId('sendMessage') },
+      { icon: '📋', label: 'Copy Email Address', hint: 'action', action: () => copyBtn && copyBtn.click() },
+      { icon: '📧', label: 'Email Me Directly', hint: 'mailto', action: () => { window.location.href = 'mailto:jaiwant96@gmail.com'; } },
+      { icon: '🐙', label: 'Open GitHub Profile', hint: '↗ new tab', action: () => window.open('https://github.com/jaiwant1996/', '_blank') },
+      { icon: '💼', label: 'Open LinkedIn Profile', hint: '↗ new tab', action: () => window.open('https://www.linkedin.com/in/jaiwant/', '_blank') },
+      { icon: '🎵', label: 'Open SoundCloud', hint: '↗ new tab', action: () => window.open('https://soundcloud.com/jaiwant96', '_blank') },
+      { icon: '⬆️', label: 'Back to Top', hint: 'nav', action: () => scrollToId('top') }
+    ];
+
+    function scrollToId(id) {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    let filtered = commands.slice();
+    let activeIndex = 0;
+
+    function render() {
+      list.innerHTML = '';
+      if (!filtered.length) {
+        list.innerHTML = '<li class="cmdk-empty">No matches. Try something else.</li>';
+        return;
+      }
+      filtered.forEach((cmd, i) => {
+        const li = document.createElement('li');
+        li.className = 'cmdk-item' + (i === activeIndex ? ' active' : '');
+        li.innerHTML = `<span class="cmdk-item-icon">${cmd.icon}</span><span>${cmd.label}</span><span class="cmdk-item-hint">${cmd.hint}</span>`;
+        li.addEventListener('click', () => runCommand(cmd));
+        list.appendChild(li);
+      });
+    }
+
+    function runCommand(cmd) {
+      closePalette();
+      setTimeout(() => cmd.action(), 120);
+    }
+
+    function filterCommands(query) {
+      const q = query.trim().toLowerCase();
+      filtered = !q ? commands.slice() : commands.filter((c) => c.label.toLowerCase().includes(q));
+      activeIndex = 0;
+      render();
+    }
+
+    function openPalette() {
+      overlay.classList.add('open');
+      input.value = '';
+      filterCommands('');
+      setTimeout(() => input.focus(), 30);
+    }
+
+    function closePalette() {
+      overlay.classList.remove('open');
+    }
+
+    if (trigger) trigger.addEventListener('click', openPalette);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) closePalette(); });
+
+    input.addEventListener('input', () => filterCommands(input.value));
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') { closePalette(); return; }
+      if (e.key === 'ArrowDown') { e.preventDefault(); activeIndex = Math.min(activeIndex + 1, filtered.length - 1); render(); }
+      if (e.key === 'ArrowUp') { e.preventDefault(); activeIndex = Math.max(activeIndex - 1, 0); render(); }
+      if (e.key === 'Enter' && filtered[activeIndex]) { e.preventDefault(); runCommand(filtered[activeIndex]); }
+    });
+
+    window.addEventListener('keydown', (e) => {
+      const isK = e.key === 'k' || e.key === 'K';
+      if ((e.metaKey || e.ctrlKey) && isK) {
+        e.preventDefault();
+        overlay.classList.contains('open') ? closePalette() : openPalette();
+      } else if (e.key === 'Escape' && overlay.classList.contains('open')) {
+        closePalette();
+      }
+    });
+  })();
+
+  /* ================================================================
+     Konami code easter egg: ↑ ↑ ↓ ↓ ← → ← → B A
+     ================================================================ */
+  (function initKonami() {
+    const sequence = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+    let progress = 0;
+    window.addEventListener('keydown', (e) => {
+      const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+      progress = key === sequence[progress] ? progress + 1 : (key === sequence[0] ? 1 : 0);
+      if (progress === sequence.length) {
+        progress = 0;
+        sparkleBurst(window.innerWidth / 2, window.innerHeight / 2);
+        showToast('Cheat code accepted. Automation level: over 9000.', 3200);
+        const heroGroup = window.__hero3dGroup;
+        if (heroGroup && window.gsap) {
+          gsap.to(heroGroup.rotation, { y: heroGroup.rotation.y + Math.PI * 4, duration: 1.6, ease: 'power3.inOut' });
         }
       }
     });
+  })();
+
+  /* ---------- Console easter egg ---------- */
+  console.log(
+    '%c👋 Poking around the console? I like that.',
+    'font-family: monospace; font-size: 14px; color: #8b5cf6; font-weight: bold;'
+  );
+  console.log(
+    '%cLet\'s talk: jaiwant96@gmail.com — or just press ⌘K / Ctrl+K on this site.',
+    'font-family: monospace; font-size: 12px; color: #cbc4de;'
+  );
+
+  /* ---------- Send-a-message form (web3forms, AJAX) ---------- */
+  const contactForm = document.getElementById('contactForm');
+  if (contactForm) {
+    const statusEl = document.getElementById('formStatus');
+    const submitBtn = contactForm.querySelector('.submit-btn');
+    contactForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (submitBtn) submitBtn.disabled = true;
+      if (statusEl) { statusEl.textContent = 'Sending…'; statusEl.className = 'form-status'; }
+
+      try {
+        const res = await fetch(contactForm.action, {
+          method: 'POST',
+          headers: { 'Accept': 'application/json' },
+          body: new FormData(contactForm)
+        });
+        const data = await res.json().catch(() => ({}));
+
+        if (res.ok && data.success !== false) {
+          if (statusEl) { statusEl.textContent = "Message sent — I'll get back to you soon."; statusEl.className = 'form-status success'; }
+          contactForm.reset();
+        } else {
+          throw new Error(data.message || 'Something went wrong.');
+        }
+      } catch (err) {
+        if (statusEl) { statusEl.textContent = "Couldn't send that — try emailing me directly instead."; statusEl.className = 'form-status error'; }
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
+      }
+    });
+  }
+
+  /* ================================================================
+     3D hero visual — layered wireframe network sphere (Three.js).
+     Idle rotation + mouse parallax + click pulse. Fully optional:
+     if Three.js failed to load, WebGL is unavailable, or the canvas
+     is hidden (small screens), this quietly does nothing — it never
+     throws, so it can't break the rest of the page's interactivity.
+     ================================================================ */
+  initHero3D();
+
+  function initHero3D() {
+    const canvas = document.getElementById('hero3d');
+    if (!canvas || !window.THREE) return;
+    if (window.getComputedStyle(canvas).display === 'none') return;
+
+    try {
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+      camera.position.z = 7;
+
+      const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+
+      const group = new THREE.Group();
+
+      const outerGeo = new THREE.IcosahedronGeometry(2.3, 1);
+      const outerLines = new THREE.LineSegments(
+        new THREE.EdgesGeometry(outerGeo),
+        new THREE.LineBasicMaterial({ color: 0x8b5cf6, transparent: true, opacity: 0.55 })
+      );
+
+      const innerGeo = new THREE.IcosahedronGeometry(1.45, 1);
+      const innerLines = new THREE.LineSegments(
+        new THREE.EdgesGeometry(innerGeo),
+        new THREE.LineBasicMaterial({ color: 0x22d3ee, transparent: true, opacity: 0.45 })
+      );
+
+      const nodesGeo = new THREE.BufferGeometry();
+      nodesGeo.setAttribute('position', outerGeo.getAttribute('position').clone());
+      const nodes = new THREE.Points(
+        nodesGeo,
+        new THREE.PointsMaterial({ color: 0xec4899, size: 0.085, transparent: true, opacity: 0.9 })
+      );
+
+      group.add(outerLines, innerLines, nodes);
+      scene.add(group);
+      window.__hero3dGroup = group;
+
+      function resize() {
+        const rect = canvas.getBoundingClientRect();
+        const w = Math.max(rect.width, 1), h = Math.max(rect.height, 1);
+        renderer.setSize(w, h, false);
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      let targetPX = 0, targetPY = 0, curPX = 0, curPY = 0;
+      window.addEventListener('mousemove', (e) => {
+        targetPX = (e.clientX / window.innerWidth - 0.5) * 1.3;
+        targetPY = (e.clientY / window.innerHeight - 0.5) * 1.3;
+      });
+
+      // Click anywhere in the hero: a small reactive "pulse"
+      const heroEl = canvas.closest('.hero');
+      if (heroEl) {
+        heroEl.addEventListener('click', () => {
+          if (window.gsap) {
+            gsap.fromTo(group.scale, { x: 1, y: 1, z: 1 }, { x: 1.12, y: 1.12, z: 1.12, duration: 0.35, ease: 'power2.out', yoyo: true, repeat: 1 });
+          }
+        });
+      }
+
+      function animate() {
+        requestAnimationFrame(animate);
+        if (!reducedMotion) {
+          group.rotation.y += 0.0018;
+          innerLines.rotation.y -= 0.0026;
+          outerLines.rotation.x += 0.0006;
+        }
+        curPX += (targetPX - curPX) * 0.04;
+        curPY += (targetPY - curPY) * 0.04;
+        camera.position.x = curPX * 1.1;
+        camera.position.y = -curPY * 1.1;
+        camera.lookAt(scene.position);
+        renderer.render(scene, camera);
+      }
+      animate();
+
+      // Fade in once the first frame is ready
+      requestAnimationFrame(() => canvas.classList.add('is-ready'));
+    } catch (err) {
+      // WebGL unsupported or blocked — fail silently, rest of the page is unaffected
+    }
   }
 
   /* ---------- Timeline scroll-progress draw ---------- */

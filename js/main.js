@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ---------- Starfield canvas ---------- */
-  initStarfield('starfield', { density: 0.00018, color: '255,255,255' });
+  initStarfield('starfield', { density: 0.00011, color: '124,255,240' });
 
   function initStarfield(canvasId, opts) {
     const canvas = document.getElementById(canvasId);
@@ -165,7 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const twinkle = opts.twinkle ? (Math.sin(t + star.phase) * 0.4 + 0.6) : 1;
         ctx.beginPath();
         ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${opts.color}, ${0.55 * twinkle})`;
+        ctx.fillStyle = `rgba(${opts.color}, ${0.38 * twinkle})`;
         ctx.fill();
         star.y += star.s;
         if (star.y > h) { star.y = 0; star.x = Math.random() * w; }
@@ -306,7 +306,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ---------- Sparkle burst helper (reused by the Konami easter egg) ---------- */
   function sparkleBurst(originX, originY, colors) {
-    colors = colors || ['#8b5cf6', '#ec4899', '#22d3ee'];
+    colors = colors || ['#55e6d1', '#7cfff0', '#d9c28a'];
     for (let i = 0; i < 24; i++) {
       const p = document.createElement('span');
       p.className = 'sparkle-particle';
@@ -520,7 +520,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast('Cheat code accepted. Automation level: over 9000.', 3200);
         const heroGroup = window.__hero3dGroup;
         if (heroGroup && window.gsap) {
-          gsap.to(heroGroup.rotation, { y: heroGroup.rotation.y + Math.PI * 4, duration: 1.6, ease: 'power3.inOut' });
+          gsap.to(heroGroup.rotation, { y: heroGroup.rotation.y + Math.PI * 2, duration: 1.6, ease: 'power3.inOut' });
         }
       }
     });
@@ -529,11 +529,11 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ---------- Console easter egg ---------- */
   console.log(
     '%c👋 Poking around the console? I like that.',
-    'font-family: monospace; font-size: 14px; color: #8b5cf6; font-weight: bold;'
+    'font-family: monospace; font-size: 14px; color: #55e6d1; font-weight: bold;'
   );
   console.log(
     '%cLet\'s talk: jaiwant96@gmail.com — or just press ⌘K / Ctrl+K on this site.',
-    'font-family: monospace; font-size: 12px; color: #cbc4de;'
+    'font-family: monospace; font-size: 12px; color: #a6b0ba;'
   );
 
   /* ---------- Send-a-message form (web3forms, AJAX) ---------- */
@@ -597,20 +597,20 @@ document.addEventListener('DOMContentLoaded', () => {
       const outerGeo = new THREE.IcosahedronGeometry(2.3, 1);
       const outerLines = new THREE.LineSegments(
         new THREE.EdgesGeometry(outerGeo),
-        new THREE.LineBasicMaterial({ color: 0x8b5cf6, transparent: true, opacity: 0.55 })
+        new THREE.LineBasicMaterial({ color: 0x1b8f82, transparent: true, opacity: 0.4 })
       );
 
       const innerGeo = new THREE.IcosahedronGeometry(1.45, 1);
       const innerLines = new THREE.LineSegments(
         new THREE.EdgesGeometry(innerGeo),
-        new THREE.LineBasicMaterial({ color: 0x22d3ee, transparent: true, opacity: 0.45 })
+        new THREE.LineBasicMaterial({ color: 0x55e6d1, transparent: true, opacity: 0.35 })
       );
 
       const nodesGeo = new THREE.BufferGeometry();
       nodesGeo.setAttribute('position', outerGeo.getAttribute('position').clone());
       const nodes = new THREE.Points(
         nodesGeo,
-        new THREE.PointsMaterial({ color: 0xec4899, size: 0.085, transparent: true, opacity: 0.9 })
+        new THREE.PointsMaterial({ color: 0x7cfff0, size: 0.06, transparent: true, opacity: 0.6 })
       );
 
       group.add(outerLines, innerLines, nodes);
@@ -638,7 +638,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (heroEl) {
         heroEl.addEventListener('click', () => {
           if (window.gsap) {
-            gsap.fromTo(group.scale, { x: 1, y: 1, z: 1 }, { x: 1.12, y: 1.12, z: 1.12, duration: 0.35, ease: 'power2.out', yoyo: true, repeat: 1 });
+            gsap.fromTo(group.scale, { x: 1, y: 1, z: 1 }, { x: 1.06, y: 1.06, z: 1.06, duration: 0.4, ease: 'power2.out', yoyo: true, repeat: 1 });
           }
         });
       }
@@ -646,9 +646,9 @@ document.addEventListener('DOMContentLoaded', () => {
       function animate() {
         requestAnimationFrame(animate);
         if (!reducedMotion) {
-          group.rotation.y += 0.0018;
-          innerLines.rotation.y -= 0.0026;
-          outerLines.rotation.x += 0.0006;
+          group.rotation.y += 0.0012;
+          innerLines.rotation.y -= 0.0017;
+          outerLines.rotation.x += 0.0004;
         }
         curPX += (targetPX - curPX) * 0.04;
         curPY += (targetPY - curPY) * 0.04;

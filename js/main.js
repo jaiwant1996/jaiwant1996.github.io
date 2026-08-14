@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ---------- Hero rotator (typewriter) ---------- */
   const phrases = [
     'turn banking chaos into KPIs.',
-    'automate my way out of busywork.',
+    'make repetitive work disappear.',
     'ship code while you\'re still in standup.',
     'solve problems nobody assigned me.'
   ];
@@ -367,11 +367,11 @@ document.addEventListener('DOMContentLoaded', () => {
   if (greetingEl) {
     const hour = new Date().getHours();
     let msg;
-    if (hour < 5) msg = "Up late? Same. Automating something, probably.";
+    if (hour < 5) msg = "Up late? Same. Probably fixing something that broke.";
     else if (hour < 12) msg = 'Good morning — hope your KPIs are behaving.';
     else if (hour < 17) msg = 'Good afternoon. Somewhere, a spreadsheet needs saving.';
     else if (hour < 21) msg = 'Good evening — perfect time to hire a consultant.';
-    else msg = "Still awake? I automate at this hour too.";
+    else msg = "Still awake? So am I, apparently.";
     greetingEl.innerHTML = `<span class="dot"></span>${msg}`;
   }
 
@@ -404,7 +404,7 @@ document.addEventListener('DOMContentLoaded', () => {
       .then((r) => (r.ok ? r.json() : Promise.reject()))
       .then((data) => {
         const repos = data.public_repos ?? '—';
-        githubStatsEl.textContent = `${repos} public repos and counting. Probably automating one right now.`;
+        githubStatsEl.textContent = `${repos} public repos and counting. Probably tinkering with one right now.`;
       })
       .catch(() => {
         githubStatsEl.textContent = 'Live stats took a coffee break — check the profile directly.';
@@ -676,7 +676,7 @@ document.addEventListener('DOMContentLoaded', () => {
           stat.textContent = '4 rows standardized · 4 formats unified · 0.4s';
           if (typeof showToast === 'function') showToast('Pipeline run complete — data cleaned ✓');
         } else {
-          btn.innerHTML = 'Automate it <span class="arrow">→</span>';
+          btn.innerHTML = 'Tidy it up <span class="arrow">→</span>';
         }
       }, totalDelay);
     });

@@ -506,6 +506,183 @@ document.addEventListener('DOMContentLoaded', () => {
   })();
 
   /* ================================================================
+     Recruiter toolkit: quick-facts card + a small client-side Q&A
+     chat over resume content. No backend, no API — just keyword
+     matching against a curated set of answers.
+     ================================================================ */
+  (function initRecruiterToolkit() {
+    const fab = document.getElementById('recruiterFab');
+    const overlay = document.getElementById('recruiterOverlay');
+    const closeBtn = document.getElementById('recruiterClose');
+    const tabs = document.querySelectorAll('.recruiter-tab');
+    const panes = document.querySelectorAll('.recruiter-pane');
+    const chat = document.getElementById('recruiterChat');
+    const chips = document.getElementById('recruiterChips');
+    const form = document.getElementById('recruiterAskForm');
+    const input = document.getElementById('recruiterAskInput');
+    if (!fab || !overlay) return;
+
+    function openToolkit() { overlay.classList.add('open'); }
+    function closeToolkit() { overlay.classList.remove('open'); }
+
+    fab.addEventListener('click', openToolkit);
+    if (closeBtn) closeBtn.addEventListener('click', closeToolkit);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeToolkit(); });
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && overlay.classList.contains('open')) closeToolkit();
+    });
+
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        tabs.forEach((t) => t.classList.remove('active'));
+        panes.forEach((p) => p.classList.remove('active'));
+        tab.classList.add('active');
+        const targetPane = document.querySelector('.recruiter-pane[data-pane="' + tab.dataset.tab + '"]');
+        if (targetPane) targetPane.classList.add('active');
+        if (tab.dataset.tab === 'ask' && chat && !chat.dataset.started) startChat();
+      });
+    });
+
+    /* ---- Q&A engine: simple keyword scoring, no external calls ---- */
+    const qa = [
+      { keywords: ['bfsi', 'bank', 'financial', 'nbfc', 'fintech'],
+        a: "3+ years at KPMG India driving BFSI digital and core-system transformation — banks, NBFCs, microfinance institutions, credit bureaus, and public-sector clients. Full lifecycle: as-is/to-be design, BRDs, RFPs, KPI baselining, and on-ground go-lives." },
+      { keywords: ['los', 'lms', 'lending', 'temenos', 'core banking'],
+        a: "Led core lending transformation on Temenos LOS/LMS for an NBFC-MFI — authored the BRD, designed the to-be journey, baselined 20 KPIs, and ran on-ground go-live support across two branches." },
+      { keywords: ['python', 'technical', 'tech stack', 'coding', 'programming', 'sql', 'skill'],
+        a: "Python (Pandas) for automation, plus SQL, Excel, PowerPoint, and hands-on Android development. Also fluent in applied generative-AI use cases and ML fundamentals." },
+      { keywords: ['rfp', 'vendor'],
+        a: "Ran end-to-end RFPs for a treasury management system and an enterprise document management system — requirements, vendor demos, weighted scoring, final recommendations." },
+      { keywords: ['gtm', 'market', 'launch'],
+        a: "Owned competitive-benchmarking and regulatory-landscape workstreams for a credit bureau's identity-theft-protection go-to-market launch." },
+      { keywords: ['education', 'degree', 'mba', 'university', 'college'],
+        a: "MBA in IT Business Management from Symbiosis International University, and a BS in Computer Science from Michigan State University." },
+      { keywords: ['certif', 'cloud', 'aws', 'azure'],
+        a: "AWS Certified Cloud Practitioner (2022) and Microsoft AZ-900 Azure Fundamentals (2025)." },
+      { keywords: ['notice', 'availability', 'join', 'start date'],
+        a: "That's best discussed directly — email jaiwant96@gmail.com and I'll get back to you fast." },
+      { keywords: ['salary', 'compensation', 'ctc', 'pay'],
+        a: "Let's talk specifics directly — drop a message and I'll respond quickly." },
+      { keywords: ['location', 'gurgaon', 'remote', 'relocat', 'based'],
+        a: "Based in Gurgaon, India. Reach out about remote or relocation specifics." },
+      { keywords: ['hobb', 'music', 'guitar', 'interest', 'outside work'],
+        a: "15+ years of self-taught guitar, some music composition on SoundCloud, and a long-standing interest in Hindu philosophy and systems thinking." },
+      { keywords: ['contact', 'email', 'reach', 'call', 'phone'],
+        a: "jaiwant96@gmail.com or +91-8009042224 — or use the copy-email button in the Contact section." }
+    ];
+
+    function findAnswer(question) {
+      const q = question.toLowerCase();
+      let best = null, bestScore = 0;
+      qa.forEach((entry) => {
+        const score = entry.keywords.reduce((n, kw) => n + (q.includes(kw) ? 1 : 0), 0);
+        if (score > bestScore) { bestScore = score; best = entry; }
+      });
+      return best ? best.a : "Good question — I don't have a canned answer for that one. Email jaiwant96@gmail.com and I'll answer directly.";
+    }
+
+    function addMessage(text, who) {
+      const msg = document.createElement('div');
+      msg.className = 'recruiter-msg ' + who;
+      msg.textContent = text;
+      chat.appendChild(msg);
+      chat.scrollTop = chat.scrollHeight;
+      return msg;
+    }
+
+    function askQuestion(question) {
+      if (!question || !question.trim()) return;
+      addMessage(question, 'user');
+      const typing = document.createElement('div');
+      typing.className = 'recruiter-msg bot typing';
+      typing.innerHTML = '<span></span><span></span><span></span>';
+      chat.appendChild(typing);
+      chat.scrollTop = chat.scrollHeight;
+      setTimeout(() => {
+        typing.remove();
+        addMessage(findAnswer(question), 'bot');
+      }, 450 + Math.random() * 400);
+    }
+
+    function startChat() {
+      chat.dataset.started = '1';
+      addMessage("Hi — ask me anything about my experience, skills, or background. Or tap a suggestion below.", 'bot');
+    }
+
+    if (chips) {
+      chips.querySelectorAll('button').forEach((chip) => {
+        chip.addEventListener('click', () => askQuestion(chip.dataset.q));
+      });
+    }
+
+    if (form) {
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const val = input.value;
+        input.value = '';
+        askQuestion(val);
+      });
+    }
+  })();
+
+  /* ================================================================
+     Automation before/after demo: staggered GSAP swap from messy to
+     clean data, right inside the "How I Optimize Work" tile.
+     ================================================================ */
+  (function initAutomationDemo() {
+    const btn = document.getElementById('automationBtn');
+    const grid = document.getElementById('automationGrid');
+    const stat = document.getElementById('automationStat');
+    if (!btn || !grid) return;
+
+    const rows = grid.querySelectorAll('.automation-row[data-row]');
+    let clean = false;
+    let busy = false;
+
+    function swapRow(row) {
+      row.querySelectorAll('span[data-messy]').forEach((cell) => {
+        cell.textContent = clean ? cell.dataset.clean : cell.dataset.messy;
+      });
+      row.classList.toggle('is-clean', clean);
+    }
+
+    btn.addEventListener('click', () => {
+      if (busy) return;
+      busy = true;
+      btn.disabled = true;
+      clean = !clean;
+      stat.textContent = '';
+
+      rows.forEach((row, i) => {
+        if (window.gsap) {
+          gsap.to(row, {
+            opacity: 0, y: -4, duration: 0.16, delay: i * 0.07,
+            onComplete: () => {
+              swapRow(row);
+              gsap.to(row, { opacity: 1, y: 0, duration: 0.2 });
+            }
+          });
+        } else {
+          swapRow(row);
+        }
+      });
+
+      const totalDelay = rows.length * 70 + 400;
+      setTimeout(() => {
+        busy = false;
+        btn.disabled = false;
+        if (clean) {
+          btn.innerHTML = 'Reset <span class="arrow">↺</span>';
+          stat.textContent = '4 rows standardized · 4 formats unified · 0.4s';
+          if (typeof showToast === 'function') showToast('Pipeline run complete — data cleaned ✓');
+        } else {
+          btn.innerHTML = 'Automate it <span class="arrow">→</span>';
+        }
+      }, totalDelay);
+    });
+  })();
+
+  /* ================================================================
      Konami code easter egg: ↑ ↑ ↓ ↓ ← → ← → B A
      ================================================================ */
   (function initKonami() {

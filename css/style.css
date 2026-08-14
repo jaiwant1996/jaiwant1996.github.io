@@ -129,6 +129,139 @@ img { max-width: 100%; display: block; }
 .cmdk-item.active, .cmdk-item:hover { background: rgba(85,230,209,0.09); color: var(--text-0); }
 .cmdk-empty { padding: 24px; text-align: center; color: var(--text-2); font-size: 0.88rem; }
 
+/* ---------- Recruiter toolkit ---------- */
+.recruiter-fab {
+  position: fixed; right: 24px; bottom: 24px; z-index: 700;
+  display: flex; align-items: center; gap: 8px;
+  background: var(--cyan); color: var(--bg-0); border: none; border-radius: 999px;
+  padding: 13px 20px 13px 16px; font-family: var(--ff-body); font-weight: 600; font-size: 0.86rem;
+  cursor: pointer; box-shadow: 0 8px 24px rgba(85,230,209,0.25);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+.recruiter-fab:hover { transform: translateY(-2px); background: var(--indigo); box-shadow: 0 10px 28px rgba(85,230,209,0.35); }
+.recruiter-fab-icon { font-size: 1rem; }
+
+.recruiter-overlay {
+  position: fixed; inset: 0; z-index: 1000; display: none;
+  background: rgba(5, 7, 11, 0.75); backdrop-filter: blur(6px);
+  align-items: center; justify-content: center; padding: 20px;
+}
+.recruiter-overlay.open { display: flex; }
+.recruiter-panel {
+  width: 100%; max-width: 480px; max-height: 82vh; display: flex; flex-direction: column;
+  background: var(--bg-1); border: 1px solid var(--glass-border-hover); border-radius: var(--radius);
+  box-shadow: 0 30px 60px rgba(0,0,0,0.45); overflow: hidden;
+}
+.recruiter-header {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 16px 18px; border-bottom: 1px solid var(--glass-border); flex-shrink: 0;
+}
+.recruiter-tabs { display: flex; gap: 4px; }
+.recruiter-tab {
+  background: none; border: none; cursor: pointer; padding: 7px 13px; border-radius: 999px;
+  font-family: var(--ff-body); font-size: 0.85rem; font-weight: 600; color: var(--text-2);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.recruiter-tab:hover { color: var(--text-0); }
+.recruiter-tab.active { background: rgba(85,230,209,0.12); color: var(--cyan); }
+.recruiter-close {
+  background: none; border: none; color: var(--text-2); cursor: pointer; font-size: 1rem;
+  width: 28px; height: 28px; border-radius: 50%; transition: background 0.2s ease, color 0.2s ease;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.recruiter-close:hover { background: var(--glass-bg-hover); color: var(--text-0); }
+
+.recruiter-body { padding: 20px; overflow-y: auto; }
+.recruiter-pane { display: none; }
+.recruiter-pane.active { display: block; }
+
+.recruiter-summary { font-family: var(--ff-head); font-weight: 700; font-size: 1.05rem; color: var(--text-0); margin-bottom: 18px; }
+.recruiter-fact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px; }
+.recruiter-fact { display: flex; flex-direction: column; gap: 4px; }
+.recruiter-fact-label { font-family: var(--ff-mono); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-2); }
+.recruiter-fact-val { font-size: 0.92rem; color: var(--text-0); font-weight: 600; }
+.recruiter-pane .tag-cloud { margin-top: 0; margin-bottom: 20px; }
+.recruiter-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.recruiter-actions .btn { padding: 11px 18px; font-size: 0.86rem; }
+
+.recruiter-chat {
+  display: flex; flex-direction: column; gap: 10px; max-height: 280px; overflow-y: auto;
+  margin-bottom: 14px; padding-right: 4px;
+}
+.recruiter-msg { max-width: 85%; padding: 10px 14px; border-radius: 14px; font-size: 0.88rem; line-height: 1.5; }
+.recruiter-msg.bot {
+  align-self: flex-start; background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-1);
+  border-bottom-left-radius: 4px;
+}
+.recruiter-msg.user {
+  align-self: flex-end; background: var(--cyan); color: var(--bg-0); font-weight: 500;
+  border-bottom-right-radius: 4px;
+}
+.recruiter-msg.typing { display: flex; gap: 4px; align-items: center; padding: 12px 14px; }
+.recruiter-msg.typing span {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--text-2);
+  animation: typingDot 1.2s infinite ease-in-out;
+}
+.recruiter-msg.typing span:nth-child(2) { animation-delay: 0.15s; }
+.recruiter-msg.typing span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes typingDot {
+  0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-3px); }
+}
+
+.recruiter-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.recruiter-chips button {
+  font-family: var(--ff-body); font-size: 0.78rem; padding: 7px 12px; border-radius: 999px;
+  background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-1); cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+.recruiter-chips button:hover { border-color: var(--cyan); color: var(--text-0); }
+.recruiter-ask-form { display: flex; gap: 8px; }
+.recruiter-ask-form input {
+  flex: 1; padding: 12px 14px; border-radius: 999px; font-family: var(--ff-body); font-size: 0.9rem;
+  background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); color: var(--text-0);
+  transition: border-color 0.2s ease;
+}
+.recruiter-ask-form input:focus { outline: none; border-color: var(--cyan); }
+.recruiter-ask-form button[type="submit"] {
+  width: 42px; height: 42px; border-radius: 50%; border: none; background: var(--cyan); color: var(--bg-0);
+  font-size: 1rem; cursor: pointer; flex-shrink: 0; transition: background 0.2s ease, transform 0.2s ease;
+}
+.recruiter-ask-form button[type="submit"]:hover { background: var(--indigo); transform: scale(1.06); }
+
+/* ---------- Automation before/after demo ---------- */
+.automation-demo { margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--glass-border); }
+.automation-demo-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 14px;
+}
+.automation-demo-label { font-size: 0.8rem; color: var(--text-2); font-family: var(--ff-mono); }
+.automation-demo-btn {
+  display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+  background: var(--cyan); color: var(--bg-0); border: none; padding: 9px 18px;
+  border-radius: 999px; font-size: 0.82rem; font-weight: 600; cursor: pointer;
+  font-family: var(--ff-body); box-shadow: 0 4px 14px rgba(85,230,209,0.16);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, opacity 0.2s ease;
+}
+.automation-demo-btn:hover { transform: translateY(-2px); background: var(--indigo); box-shadow: 0 6px 18px rgba(85,230,209,0.26); }
+.automation-demo-btn:disabled { opacity: 0.55; cursor: default; transform: none; }
+.automation-grid {
+  display: flex; flex-direction: column; gap: 1px; background: var(--glass-border);
+  border: 1px solid var(--glass-border); border-radius: 10px; overflow: hidden;
+  font-family: var(--ff-mono); font-size: 0.78rem;
+}
+.automation-row {
+  display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 8px;
+  background: var(--bg-1); padding: 9px 12px;
+}
+.automation-row.automation-header {
+  background: var(--bg-2); color: var(--text-2); text-transform: uppercase;
+  letter-spacing: 0.06em; font-size: 0.66rem;
+}
+.automation-row span { color: var(--text-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.automation-row.is-clean span { color: var(--text-0); }
+.automation-row.is-clean span[data-field="status"] { color: var(--cyan); }
+.automation-demo-stat { margin-top: 12px; font-family: var(--ff-mono); font-size: 0.78rem; color: var(--cyan); min-height: 1.2em; }
+
 /* ---------- Nav ---------- */
 .navbar {
   position: fixed; top: 0; left: 0; right: 0; z-index: 500;
@@ -508,6 +641,12 @@ main > section { padding: 110px 0; position: relative; }
   .cursor-glow { display: none; }
   main > section { padding: 76px 0; }
   .container { padding-left: 22px; padding-right: 22px; }
+  .recruiter-fab-label { display: none; }
+  .recruiter-fab { padding: 14px; right: 16px; bottom: 16px; }
+  .recruiter-fact-grid { grid-template-columns: 1fr; }
+  .automation-demo-head { flex-direction: column; align-items: flex-start; }
+  .automation-row { grid-template-columns: 1fr 1fr; row-gap: 4px; }
+  .automation-row span:nth-child(3), .automation-row span:nth-child(4) { font-size: 0.7rem; color: var(--text-2); }
 }
 
 /* ============================================

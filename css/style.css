@@ -609,10 +609,9 @@ main > section { padding: 110px 0; position: relative; }
 
 /* ============================================================
    SHOWPIECE FEATURES
-   1) Hero "open to opportunities" badge + guided-tour trigger
+   1) Hero "open to opportunities" badge
    2) Cursor spotlight on cards + rotating glow border
    3) Skills radar panel
-   4) Guided recruiter tour overlay
    ============================================================ */
 
 /* ---- Hero availability badge ---- */
@@ -632,30 +631,6 @@ main > section { padding: 110px 0; position: relative; }
   70% { box-shadow: 0 0 0 8px rgba(85,230,209,0); }
   100% { box-shadow: 0 0 0 0 rgba(85,230,209,0); }
 }
-
-/* ---- Hero guided-tour trigger ---- */
-.hero-tour-trigger {
-  margin-top: 22px; background: none; border: none; cursor: pointer;
-  color: var(--text-2); font-family: var(--ff-mono); font-size: 0.82rem;
-  display: inline-flex; align-items: center; gap: 8px; padding: 4px 0;
-  transition: color 0.2s ease; letter-spacing: 0.02em;
-}
-.hero-tour-trigger:hover { color: var(--cyan); }
-.hero-tour-play {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 22px; height: 22px; border-radius: 50%; font-size: 0.6rem;
-  background: rgba(85,230,209,0.12); border: 1px solid rgba(85,230,209,0.35); color: var(--cyan);
-  transition: background 0.2s ease, transform 0.2s ease;
-}
-.hero-tour-trigger:hover .hero-tour-play { background: rgba(85,230,209,0.22); transform: scale(1.08); }
-
-.recruiter-tour-link {
-  margin-top: 14px; width: 100%; text-align: center; background: none; cursor: pointer;
-  border: 1px dashed var(--glass-border); border-radius: 10px; padding: 11px;
-  color: var(--text-1); font-family: var(--ff-mono); font-size: 0.82rem;
-  transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
-}
-.recruiter-tour-link:hover { border-color: var(--cyan); color: var(--cyan); background: rgba(85,230,209,0.05); }
 
 /* ---- Cursor spotlight on cards ---- */
 .bento-tile, .timeline-card, .edu-card, .radar-panel { --mx: 50%; --my: 50%; }
@@ -706,49 +681,28 @@ main > section { padding: 110px 0; position: relative; }
 .radar-legend .rl-label { flex: 1; }
 .radar-legend .rl-val { font-family: var(--ff-mono); color: var(--cyan); font-size: 0.82rem; }
 
-/* ---- Guided recruiter tour ---- */
-.tour-active { overflow: hidden; }
-.tour-dim {
-  position: fixed; z-index: 1400; border-radius: 14px; pointer-events: none;
-  box-shadow: 0 0 0 9999px rgba(5,7,11,0.82); border: 1.5px solid rgba(85,230,209,0.6);
-  transition: all 0.4s cubic-bezier(0.4,0,0.2,1); opacity: 0;
-}
-.tour-dim.show { opacity: 1; }
-.tour-tooltip {
-  position: fixed; z-index: 1401; width: min(360px, 88vw);
-  background: var(--bg-1); border: 1px solid var(--glass-border-hover); border-radius: var(--radius);
-  padding: 22px; box-shadow: 0 24px 60px rgba(0,0,0,0.55);
-  opacity: 0; transform: translateY(8px); transition: opacity 0.35s ease, transform 0.35s ease;
-}
-.tour-tooltip.show { opacity: 1; transform: translateY(0); }
-.tour-step-count { font-family: var(--ff-mono); font-size: 0.72rem; color: var(--cyan); letter-spacing: 0.08em; text-transform: uppercase; }
-.tour-tooltip h4 { font-family: var(--ff-head); font-size: 1.15rem; color: var(--text-0); margin: 8px 0 8px; }
-.tour-tooltip p { font-size: 0.94rem; color: var(--text-1); margin-bottom: 18px; }
-.tour-dots { display: flex; gap: 6px; margin-bottom: 16px; }
-.tour-dots span { width: 7px; height: 7px; border-radius: 50%; background: var(--glass-border); transition: background 0.25s ease, width 0.25s ease; }
-.tour-dots span.active { background: var(--cyan); width: 18px; border-radius: 4px; }
-.tour-controls { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.tour-controls .tour-nav { display: flex; gap: 8px; }
-.tour-btn {
-  font-family: var(--ff-body); font-size: 0.85rem; font-weight: 600; cursor: pointer;
-  padding: 9px 16px; border-radius: 999px; border: 1px solid var(--glass-border);
-  background: transparent; color: var(--text-1); transition: all 0.2s ease;
-}
-.tour-btn:hover { border-color: var(--cyan); color: var(--text-0); }
-.tour-btn.primary { background: var(--cyan); color: var(--bg-0); border-color: var(--cyan); }
-.tour-btn.primary:hover { background: var(--indigo); transform: translateY(-1px); }
-.tour-skip { background: none; border: none; color: var(--text-2); font-size: 0.8rem; cursor: pointer; font-family: var(--ff-mono); }
-.tour-skip:hover { color: var(--text-0); }
-
 /* ---------- Responsive ---------- */
 /* Nav switches to the hamburger menu earlier than the rest of the layout —
    the full link row (incl. "Beyond The Spreadsheets" + two pill buttons)
    needs ~1000px of breathing room, or its items wrap mid-word and the
    pill buttons break. */
 @media (max-width: 1060px) {
-  .nav-links { position: fixed; top: 64px; right: 0; left: 0; flex-direction: column; align-items: flex-start;
-    background: rgba(5,7,11,0.97); backdrop-filter: blur(18px); padding: 24px 32px; gap: 20px;
-    border-bottom: 1px solid var(--glass-border); transform: translateY(-120%); transition: transform 0.3s ease; }
+  /* Solid top bar on mobile so nothing (e.g. the hero portrait) bleeds
+     up through a transparent navbar. */
+  .navbar {
+    background: rgba(5,7,11,0.96);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    backdrop-filter: blur(14px) saturate(140%);
+    border-bottom: 1px solid var(--glass-border);
+  }
+  .navbar.scrolled { background: rgba(5,7,11,0.96); }
+  /* Fully opaque dropdown panel (no reliance on backdrop-filter, which
+     needs the -webkit- prefix on iOS Safari) so the menu cleanly covers
+     the hero content behind it. */
+  .nav-links { position: fixed; top: 60px; right: 0; left: 0; flex-direction: column; align-items: flex-start;
+    background: var(--bg-0); z-index: 20; padding: 24px 32px; gap: 20px;
+    box-shadow: 0 24px 40px rgba(0,0,0,0.5);
+    border-bottom: 1px solid var(--glass-border); transform: translateY(-130%); transition: transform 0.3s ease; }
   .nav-links.open { transform: translateY(0); }
   .nav-toggle { display: flex; }
   .cmdk-trigger { display: none; }
@@ -760,10 +714,10 @@ main > section { padding: 110px 0; position: relative; }
   /* Keep the photo visible below the 3D-visual breakpoint too — it's a
      static image, not the expensive WebGL one — just re-flow it above
      the text as a smaller, centered circle instead of bleeding off the edge. */
-  .hero { flex-direction: column; padding-top: 110px; }
+  .hero { flex-direction: column; padding-top: 124px; }
   .hero-photo {
-    position: relative; top: auto; left: auto; transform: none;
-    width: 160px; height: 160px; max-width: 160px; margin: 0 auto 20px;
+    position: relative; top: auto; left: auto; transform: none; z-index: 1;
+    width: 150px; height: 150px; max-width: 150px; margin: 0 auto 22px;
   }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .skills-grid { grid-template-columns: repeat(2, 1fr); }
@@ -792,7 +746,6 @@ main > section { padding: 110px 0; position: relative; }
   .automation-row { grid-template-columns: 1fr 1fr; row-gap: 4px; }
   .automation-row span:nth-child(3), .automation-row span:nth-child(4) { font-size: 0.7rem; color: var(--text-2); }
   .radar-panel { padding: 24px; }
-  .tour-tooltip { width: min(340px, 92vw); padding: 18px; }
 }
 
 /* ============================================

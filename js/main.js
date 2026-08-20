@@ -423,6 +423,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!overlay || !input || !list) return;
 
     const commands = [
+      { icon: '🧭', label: 'Take the guided tour', hint: 'for recruiters', action: () => window.__startTour && window.__startTour() },
       { icon: '👋', label: 'Go to About', hint: 'section', action: () => scrollToId('about') },
       { icon: '⚙️', label: 'Go to Skills', hint: 'section', action: () => scrollToId('skills') },
       { icon: '💼', label: 'Go to Experience', hint: 'section', action: () => scrollToId('work') },
@@ -680,6 +681,349 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }, totalDelay);
     });
+  })();
+
+  /* ================================================================
+     Cursor spotlight on cards — a soft cyan radial highlight that
+     follows the pointer inside each card. Driven purely by CSS
+     custom props, so it's cheap.
+     ================================================================ */
+  (function initSpotlightCards() {
+    if (!pointerFine) return;
+    const cards = document.querySelectorAll('.bento-tile, .timeline-card, .edu-card, .radar-panel');
+    cards.forEach((card) => {
+      card.addEventListener('mousemove', (e) => {
+        const b = card.getBoundingClientRect();
+        card.style.setProperty('--mx', (e.clientX - b.left) + 'px');
+        card.style.setProperty('--my', (e.clientY - b.top) + 'px');
+        card.classList.add('is-spot');
+      });
+      card.addEventListener('mouseleave', () => card.classList.remove('is-spot'));
+    });
+  })();
+
+  /* ================================================================
+     Skills radar — an animated spider/radar chart on <canvas> with
+     a rotating radar sweep. The skill polygon eases in the first
+     time it scrolls into view. Honest, resume-derived values.
+     ================================================================ */
+  (function initSkillsRadar() {
+    const canvas = document.getElementById('skillsRadar');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const skills = [
+      { label: 'Strategy & Advisory', value: 0.92 },
+      { label: 'Requirements / BRD', value: 0.88 },
+      { label: 'Delivery & Go-Live', value: 0.82 },
+      { label: 'Python / Scripting', value: 0.75 },
+      { label: 'Data / SQL', value: 0.70 },
+      { label: 'GenAI / ML', value: 0.68 }
+    ];
+
+    // Build legend
+    const legend = document.getElementById('radarLegend');
+    if (legend) {
+      legend.innerHTML = skills.map((s) =>
+        `<li><span class="rl-dot"></span><span class="rl-label">${s.label}</span><span class="rl-val">${Math.round(s.value * 100)}%</span></li>`
+      ).join('');
+    }
+
+    const size = 520;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = size * dpr;
+    canvas.height = size * dpr;
+    ctx.scale(dpr, dpr);
+
+    const cx = size / 2, cy = size / 2, r = size * 0.33;
+    const N = skills.length;
+    const angleFor = (i) => -Math.PI / 2 + (i / N) * Math.PI * 2;
+
+    let progress = 0;      // data polygon draw-in (0..1)
+    let started = false;
+    let sweep = 0;         // radar sweep angle
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function pt(i, radius) {
+      const a = angleFor(i);
+      return [cx + Math.cos(a) * radius, cy + Math.sin(a) * radius];
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, size, size);
+
+      // grid rings
+      const levels = [0.25, 0.5, 0.75, 1];
+      levels.forEach((lv) => {
+        ctx.beginPath();
+        for (let i = 0; i < N; i++) {
+          const [x, y] = pt(i, r * lv);
+          i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.strokeStyle = 'rgba(28,39,51,0.9)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      });
+
+      // axes + labels
+      ctx.font = '11px "JetBrains Mono", monospace';
+      ctx.fillStyle = '#66717d';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      for (let i = 0; i < N; i++) {
+        const [ex, ey] = pt(i, r);
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(ex, ey);
+        ctx.strokeStyle = 'rgba(28,39,51,0.7)';
+        ctx.stroke();
+        const [lx, ly] = pt(i, r + 26);
+        // wrap two-word labels onto two lines to avoid clipping
+        const words = skills[i].label.split(' ');
+        if (words.length > 2) {
+          ctx.fillText(words.slice(0, 2).join(' '), lx, ly - 6);
+          ctx.fillText(words.slice(2).join(' '), lx, ly + 6);
+        } else {
+          ctx.fillText(skills[i].label, lx, ly);
+        }
+      }
+
+      // radar sweep (rotating beam)
+      if (!reduced) {
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(sweep);
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.arc(0, 0, r, -0.4, 0);
+        ctx.closePath();
+        const g = ctx.createRadialGradient(0, 0, 0, 0, 0, r);
+        g.addColorStop(0, 'rgba(85,230,209,0.22)');
+        g.addColorStop(1, 'rgba(85,230,209,0)');
+        ctx.fillStyle = g;
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(124,255,240,0.7)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(r, 0);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // data polygon
+      ctx.beginPath();
+      for (let i = 0; i < N; i++) {
+        const [x, y] = pt(i, r * skills[i].value * progress);
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(85,230,209,0.16)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(85,230,209,0.9)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // data vertices
+      for (let i = 0; i < N; i++) {
+        const [x, y] = pt(i, r * skills[i].value * progress);
+        ctx.beginPath();
+        ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+        ctx.fillStyle = '#7cfff0';
+        ctx.fill();
+      }
+    }
+
+    function loop() {
+      if (progress < 1) progress = Math.min(1, progress + 0.02);
+      sweep += 0.02;
+      draw();
+      if (progress < 1 || !reduced) requestAnimationFrame(loop);
+      else draw();
+    }
+
+    function start() {
+      if (started) return;
+      started = true;
+      requestAnimationFrame(loop);
+    }
+
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((e) => { if (e.isIntersecting) { start(); io.disconnect(); } });
+      }, { threshold: 0.35 });
+      io.observe(canvas);
+    } else {
+      start();
+    }
+  })();
+
+  /* ================================================================
+     Guided recruiter tour — a spotlight walkthrough of the site's
+     key selling points. Dims everything except the current target,
+     shows a callout, and auto-scrolls between stops. Launchable from
+     the hero, the recruiter toolkit, and the command palette.
+     ================================================================ */
+  (function initGuidedTour() {
+    const steps = [
+      { sel: '.hero-content', tag: 'The 30-second version',
+        title: "Hi, I'm Jaiwant 👋",
+        body: "A technology strategy consultant working across BFSI — I turn digital and core-system mandates into shipped outcomes. Let me show you around in under a minute." },
+      { sel: '.stats-section .stats-grid', tag: 'Track record',
+        title: 'Three-plus years, real delivery',
+        body: "At KPMG, driving BFSI transformation for banks, NBFCs, microfinance institutions and public-sector clients — cloud-certified, and I ship things solo when I have to." },
+      { sel: '.timeline-card', tag: 'Experience',
+        title: 'Actual engagements, not buzzwords',
+        body: "Core lending on Temenos LOS/LMS, end-to-end RFPs, on-ground go-lives, go-to-market strategy — full lifecycle, start to finish." },
+      { sel: '.radar-panel', tag: 'The skill spread',
+        title: 'Strategy and hands-on delivery',
+        body: "Most consultants pick one lane. I sit in the overlap between business strategy and hands-on technical delivery — here's the honest breakdown." },
+      { sel: '#contact .contact-inner', tag: "Let's talk",
+        title: 'Think I could be a fit?',
+        body: "If this looks like the kind of person your team needs, I'd love to hear from you. One click and you're in touch." }
+    ];
+
+    // Build overlay DOM once
+    const dim = document.createElement('div');
+    dim.className = 'tour-dim';
+    const tip = document.createElement('div');
+    tip.className = 'tour-tooltip';
+    tip.setAttribute('role', 'dialog');
+    tip.setAttribute('aria-live', 'polite');
+    document.body.appendChild(dim);
+    document.body.appendChild(tip);
+
+    let idx = 0, active = false, target = null, syncScheduled = false;
+
+    function dots() {
+      return '<div class="tour-dots">' +
+        steps.map((_, i) => `<span class="${i === idx ? 'active' : ''}"></span>`).join('') +
+        '</div>';
+    }
+
+    function renderTip() {
+      const s = steps[idx];
+      const isLast = idx === steps.length - 1;
+      const nextLabel = isLast ? "Let's talk →" : 'Next →';
+      tip.innerHTML =
+        `<span class="tour-step-count">${s.tag} · ${idx + 1} of ${steps.length}</span>` +
+        `<h4>${s.title}</h4>` +
+        `<p>${s.body}</p>` +
+        dots() +
+        `<div class="tour-controls">` +
+          `<button type="button" class="tour-skip" data-tour="skip">Skip tour</button>` +
+          `<div class="tour-nav">` +
+            (idx > 0 ? `<button type="button" class="tour-btn" data-tour="prev">← Back</button>` : '') +
+            `<button type="button" class="tour-btn primary" data-tour="next">${nextLabel}</button>` +
+          `</div>` +
+        `</div>`;
+    }
+
+    function sync() {
+      syncScheduled = false;
+      if (!active || !target) return;
+      const rect = target.getBoundingClientRect();
+      const pad = 10;
+      dim.style.top = (rect.top - pad) + 'px';
+      dim.style.left = (rect.left - pad) + 'px';
+      dim.style.width = (rect.width + pad * 2) + 'px';
+      dim.style.height = (rect.height + pad * 2) + 'px';
+
+      const ttW = tip.offsetWidth || 360;
+      const ttH = tip.offsetHeight || 200;
+      const gap = 16;
+      let top;
+      if (rect.bottom + gap + ttH < window.innerHeight) top = rect.bottom + gap;
+      else if (rect.top - gap - ttH > 0) top = rect.top - gap - ttH;
+      else top = Math.max(gap, (window.innerHeight - ttH) / 2);
+      let left = rect.left + rect.width / 2 - ttW / 2;
+      left = Math.max(gap, Math.min(left, window.innerWidth - ttW - gap));
+      tip.style.top = top + 'px';
+      tip.style.left = left + 'px';
+    }
+
+    function scheduleSync() {
+      if (syncScheduled) return;
+      syncScheduled = true;
+      requestAnimationFrame(sync);
+    }
+
+    function goTo(i) {
+      idx = Math.max(0, Math.min(i, steps.length - 1));
+      target = document.querySelector(steps[idx].sel);
+      if (!target) { // skip missing target gracefully
+        if (i < steps.length - 1) return goTo(i + 1);
+        return end();
+      }
+      renderTip();
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      sync();
+      // re-sync after the smooth scroll settles
+      setTimeout(sync, 300);
+      setTimeout(sync, 550);
+    }
+
+    function start() {
+      if (active) return;
+      active = true;
+      idx = 0;
+      dim.classList.add('show');
+      tip.classList.add('show');
+      goTo(0);
+      window.addEventListener('scroll', scheduleSync, { passive: true });
+      window.addEventListener('resize', scheduleSync);
+      window.addEventListener('keydown', onKey);
+    }
+
+    function end() {
+      active = false;
+      dim.classList.remove('show');
+      tip.classList.remove('show');
+      window.removeEventListener('scroll', scheduleSync);
+      window.removeEventListener('resize', scheduleSync);
+      window.removeEventListener('keydown', onKey);
+    }
+
+    function onKey(e) {
+      if (!active) return;
+      if (e.key === 'Escape') { e.preventDefault(); end(); }
+      else if (e.key === 'ArrowRight') { e.preventDefault(); next(); }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(idx - 1); }
+    }
+
+    function next() {
+      if (idx === steps.length - 1) {
+        end();
+        const contact = document.getElementById('sendMessage') || document.getElementById('contact');
+        if (contact) contact.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        goTo(idx + 1);
+      }
+    }
+
+    tip.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-tour]');
+      if (!btn) return;
+      const act = btn.getAttribute('data-tour');
+      if (act === 'skip') end();
+      else if (act === 'prev') goTo(idx - 1);
+      else if (act === 'next') next();
+    });
+
+    // Triggers
+    const heroTrigger = document.getElementById('heroTourTrigger');
+    if (heroTrigger) heroTrigger.addEventListener('click', start);
+    const recruiterTrigger = document.getElementById('recruiterTourBtn');
+    if (recruiterTrigger) recruiterTrigger.addEventListener('click', () => {
+      const ov = document.getElementById('recruiterOverlay');
+      if (ov) ov.classList.remove('open');
+      setTimeout(start, 200);
+    });
+
+    // Expose for the command palette
+    window.__startTour = start;
   })();
 
   /* ================================================================
